@@ -39,6 +39,18 @@ app.post('/api/pins', async (req, res) => {
   }
 });
 
+app.delete('/api/pins/:id', async (req, res) => {
+  try {
+    const deletedPin = await Pin.findByIdAndDelete(req.params.id);
+    if (!deletedPin) {
+      return res.status(404).json({ message: 'Pin not found' });
+    }
+    res.json({ message: 'Pin deleted', deletedPin });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete pin', error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
