@@ -28,6 +28,17 @@ app.get('/api/pins', async (req, res) => {
   }
 });
 
+app.post('/api/pins', async (req, res) => {
+  try {
+    const { caption, imageUrl, tags } = req.body;
+    const newPin = new Pin({ caption, imageUrl, tags });
+    const savedPin = await newPin.save();
+    res.status(201).json(savedPin);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to create pin', error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
