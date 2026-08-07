@@ -82,8 +82,8 @@ function App() {
       });
   };
 
-  if (loading) return <p>Loading pins...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) return <p className="status-message">Loading pins...</p>;
+  if (error) return <p className="status-message error">Something went wrong: {error}. Please check that the server is running.</p>;
 
   return (
     <div className="App">
