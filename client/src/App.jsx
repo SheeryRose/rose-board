@@ -66,6 +66,22 @@ function App() {
       });
   };
 
+  const handleDelete = (id) => {
+    fetch(`http://localhost:5000/api/pins/${id}`, {
+      method: 'DELETE',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to delete pin');
+        return res.json();
+      })
+      .then(() => {
+        setPins((prevPins) => prevPins.filter((pin) => pin._id !== id));
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
+  };
+
   if (loading) return <p>Loading pins...</p>;
   if (error) return <p>Error: {error}</p>;
 
@@ -105,6 +121,7 @@ function App() {
             <div key={pin._id} className="pin-card">
               <img src={pin.imageUrl} alt={pin.caption} />
               <p>{pin.caption}</p>
+              <button onClick={() => handleDelete(pin._id)}>Delete</button>
             </div>
           ))}
         </div>
