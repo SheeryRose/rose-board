@@ -3,6 +3,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const upload = require('./middleware/upload');
+const cloudinary = require('./config/cloudinary');
 const Pin = require('./models/Pin');
 
 const app = express();
@@ -36,6 +38,43 @@ app.post('/api/pins', async (req, res) => {
     res.status(201).json(savedPin);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create pin', error: err.message });
+  }
+});
+
+app.post('/api/pins/upload', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const streamUpload = () => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'rose-board' },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+    };
+
+    const result = await streamUpload();
+
+    const { caption, tags } = req.body;
+    const parsedTags = tags ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+
+    const newPin = new Pin({
+      caption,
+      imageUrl: result.secure_url,
+      tags: parsedTags,
+    });
+
+    const savedPin = await newPin.save();
+    res.status(201).json(savedPin);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to upload image and create pin', error: err.message });
   }
 });
 
