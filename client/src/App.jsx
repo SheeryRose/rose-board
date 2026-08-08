@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function App() {
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +16,7 @@ function App() {
 
   const fetchPins = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/pins')
+    fetch(`${API_URL}/api/pins`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch pins');
         return res.json();
@@ -44,7 +46,7 @@ function App() {
     formData.append('tags', tags);
     formData.append('image', imageFile);
 
-    fetch('http://localhost:5000/api/pins/upload', {
+    fetch(`${API_URL}/api/pins/upload`, {
       method: 'POST',
       body: formData,
     })
@@ -67,7 +69,7 @@ function App() {
   };
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:5000/api/pins/${id}`, {
+    fetch(`${API_URL}/api/pins/${id}`, {
       method: 'DELETE',
     })
       .then((res) => {
