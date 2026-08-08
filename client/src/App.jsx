@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
@@ -7,9 +7,10 @@ function App() {
   const [error, setError] = useState(null);
 
   const [caption, setCaption] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
   const [tags, setTags] = useState('');
+  const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const fileInputRef = useRef(null);
 
   const fetchPins = () => {
     setLoading(true);
@@ -34,29 +35,28 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!caption || !imageUrl) return;
+    if (!caption || !imageFile) return;
 
     setSubmitting(true);
 
-    const newPin = {
-      caption,
-      imageUrl,
-      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
-    };
+    const formData = new FormData();
+    formData.append('caption', caption);
+    formData.append('tags', tags);
+    formData.append('image', imageFile);
 
-    fetch('http://localhost:5000/api/pins', {
+    fetch('http://localhost:5000/api/pins/upload', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newPin),
+      body: formData,
     })
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to create pin');
+        if (!res.ok) throw new Error('Failed to upload pin');
         return res.json();
       })
       .then(() => {
         setCaption('');
-        setImageUrl('');
         setTags('');
+        setImageFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
         setSubmitting(false);
         fetchPins();
       })
@@ -97,10 +97,10 @@ function App() {
           onChange={(e) => setCaption(e.target.value)}
         />
         <input
-          type="text"
-          placeholder="Image URL"
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          onChange={(e) => setImageFile(e.target.files[0])}
         />
         <input
           type="text"
@@ -109,7 +109,7 @@ function App() {
           onChange={(e) => setTags(e.target.value)}
         />
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Adding...' : 'Add Pin'}
+          {submitting ? 'Uploading...' : 'Add Pin'}
         </button>
       </form>
 
